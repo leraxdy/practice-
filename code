@@ -1,0 +1,157 @@
+#include <iostream>
+#include <iomanip>
+#include <Windows.h>
+#include <cstdlib> 
+#include <ctime>   
+using namespace std;
+
+const int SIZE = 3;
+char board[SIZE][SIZE];
+char currentPlayer = 'X';
+
+// створює поле заповнючи його числами ві 1 до 9
+void initializeBoard() {
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            board[i][j] = '1' + i * SIZE + j;
+        }
+    }
+}
+
+// виводить поле
+void printBoard() {
+    cout << "Current board:\n";
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            cout << board[i][j];
+            if (j < SIZE - 1) cout << " | ";
+        }
+        cout << endl;
+        if (i < SIZE - 1) cout << "--+---+--\n";
+    }
+}
+
+// перевіряє правильність ходу
+bool isMoveValid(int move) {
+    int row = (move - 1) / SIZE;
+    int col = (move - 1) % SIZE;
+    return move >= 1 && move <= SIZE * SIZE && board[row][col] != 'X' && board[row][col] != 'O';
+}
+
+// перевірка перемоги
+bool isWinner(char player) {
+    // по горизонталі або вертикалі
+    for (int i = 0; i < SIZE; i++) {
+        if ((board[i][0] == player && board[i][1] == player && board[i][2] == player) ||
+            (board[0][i] == player && board[1][i] == player && board[2][i] == player)) {
+            return true;
+        }
+    }
+    // по діагоналі
+    if ((board[0][0] == player && board[1][1] == player && board[2][2] == player) ||
+        (board[0][2] == player && board[1][1] == player && board[2][0] == player)) {
+        return true;
+    }
+    return false;
+}
+
+// перевірка нічиєї
+bool isBoardFull() {
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            if (board[i][j] != 'X' && board[i][j] != 'O') {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+
+void switchPlayer() {
+    currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+}
+
+
+void makeMove(int move) {
+    int row = (move - 1) / SIZE;
+    int col = (move - 1) % SIZE;
+    board[row][col] = currentPlayer;
+}
+
+// випадковий хід компа.
+void makeRandomMove() {
+    int move;
+    do {
+        move = rand() % 9 + 1; 
+    } while (!isMoveValid(move));
+    makeMove(move);
+}
+
+int main() {
+    srand(static_cast<unsigned int>(time(0))); 
+
+    int choice;
+    cout << "Heyyy! It's game Tic-Tac-Toe" << endl;
+    cout << "Please, choose your mode: 1 (Player vs Player) or 2 (Player vs Computer)" << endl;
+    cin >> choice;
+
+    switch (choice) {
+    case 1:
+        cout << "You selected Player vs Player mode" << endl;
+        break;
+    case 2:
+        cout << "You selected Player vs Computer mode" << endl;
+        initializeBoard();
+        while (true) {
+            printBoard();
+            int move;
+            cout << "Player " << currentPlayer << ", enter your move (1-9): ";
+            cin >> move;
+
+            if (!isMoveValid(move)) {
+                cout << "Invalid move. Try again.\n";
+                continue;
+            }
+
+            makeMove(move);
+
+            if (isWinner(currentPlayer)) {
+                printBoard();
+                cout << "Player " << currentPlayer << " wins!\n";
+                break;
+            }
+
+            if (isBoardFull()) {
+                printBoard();
+                cout << "It's a draw!\n";
+                break;
+            }
+
+            switchPlayer();
+
+            
+            if (currentPlayer == 'O') {
+                makeRandomMove();
+                if (isWinner(currentPlayer)) {
+                    printBoard();
+                    cout << "Player " << currentPlayer << " wins!\n";
+                    break;
+                }
+
+                if (isBoardFull()) {
+                    printBoard();
+                    cout << "It's a draw!\n";
+                    break;
+                }
+
+                switchPlayer();
+            }
+        }
+        break;
+    default:
+        cout << "Invalid mode selected" << endl;
+    }
+
+    return 0;
+}
